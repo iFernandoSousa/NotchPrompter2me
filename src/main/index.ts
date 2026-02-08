@@ -108,6 +108,9 @@ function setAppIconIfExists(): void {
 async function init() {
     try {
         initDatabase();
+        if (process.platform === "darwin") {
+            app.dock.show();
+        }
         setAppIconIfExists();
         app.setName("Notch Prompter");
         createApplicationMenu();

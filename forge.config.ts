@@ -9,6 +9,9 @@ const config: ForgeConfig = {
         executableName: "NotchPrompter",
         icon: "./assets/icon",
         asar: false, // Ensure we can inspect the app content easily, though 'true' is better for shipping. False for now while debugging.
+        extendInfo: {
+            LSUIElement: false,
+        },
     },
     rebuildConfig: {},
     makers: [new MakerZIP({}, ["darwin"])],
