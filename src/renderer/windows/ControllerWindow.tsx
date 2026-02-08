@@ -5,10 +5,12 @@ import PlaybackControls from '../components/controls/PlaybackControls';
 import SettingsPanel from '../components/controls/SettingsPanel';
 import ScriptManager from '../components/controls/ScriptManager';
 import SpeechStatus from '../components/speech/SpeechStatus';
+import SyncPrompterSettings from '../components/SyncPrompterSettings';
 
 export default function ControllerWindow() {
   return (
     <EditorProvider>
+      <SyncPrompterSettings />
       <div className="min-h-screen bg-zinc-900 text-zinc-100 flex flex-col">
         <header className="border-b border-zinc-700 px-4 py-2 flex items-center justify-between">
           <h1 className="text-lg font-semibold">NotchPrompter</h1>

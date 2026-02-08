@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useScriptStore } from '../../store/scriptStore';
+import { useScriptStore, defaultScriptSettings } from '../../store/scriptStore';
 import { usePrompterStore } from '../../store/prompterStore';
 import { useIpc } from '../../hooks/useIpc';
 import { useEditorContext } from '../../contexts/EditorContext';
@@ -42,7 +42,7 @@ export default function ScriptManager() {
     if (!ipc || !editor) return;
     const full = await ipc.script.read(script.id);
     if (!full) return;
-    const parsedSettings = JSON.parse(full.settings) as typeof settings;
+    const parsedSettings = { ...defaultScriptSettings, ...JSON.parse(full.settings) } as typeof settings;
     setEditorContentJson(full.body);
     setSettings(parsedSettings);
     setBaseWpm(full.speech_speed);

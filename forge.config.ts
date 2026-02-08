@@ -4,6 +4,7 @@ import { VitePlugin } from '@electron-forge/plugin-vite';
 const config: ForgeConfig = {
   packagerConfig: {
     executableName: 'NotchPrompter',
+    icon: './assets/icon',
   },
   plugins: [
     new VitePlugin({

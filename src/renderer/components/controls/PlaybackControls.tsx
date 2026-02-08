@@ -1,14 +1,17 @@
 import { usePrompterStore } from '../../store/prompterStore';
+import { useScriptStore } from '../../store/scriptStore';
 import { useIpc } from '../../hooks/useIpc';
 
 export default function PlaybackControls() {
   const { playbackState, setPlaybackState } = usePrompterStore();
+  const { settings } = useScriptStore();
   const ipc = useIpc();
 
   const handlePlay = () => {
     setPlaybackState('playing');
+    ipc?.sendPrompterSettings(settings);
     ipc?.window.showPrompter(true);
-    ipc?.vosk.start();
+    ipc?.vosk.start(settings.language);
   };
 
   const handlePause = () => {

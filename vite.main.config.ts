@@ -10,7 +10,7 @@ export default defineConfig({
       fileName: () => 'main.js',
     },
     rollupOptions: {
-      external: ['electron', 'better-sqlite3'],
+      external: ['electron', 'better-sqlite3', 'vosk', 'mic', 'extract-zip'],
       output: {
         entryFileNames: 'main.js',
       },

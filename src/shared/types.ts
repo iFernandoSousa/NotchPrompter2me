@@ -9,6 +9,8 @@ export interface ScriptSettings {
   fontColor: string;
   prompterWidth: number;
   prompterHeight: number;
+  /** Vosk language code (e.g. 'en-us'). */
+  language: string;
 }
 
 /** Script entity as stored in SQLite. */
@@ -55,6 +57,19 @@ export interface VoskStatusPayload {
   message?: string;
 }
 
+/** Payload for vosk:on-download-progress. */
+export interface VoskDownloadProgressPayload {
+  language: string;
+  percent: number;
+  bytesDownloaded: number;
+  totalBytes: number;
+}
+
+/** Payload for vosk:on-amplitude (0.0–1.0). */
+export interface VoskAmplitudePayload {
+  amplitude: number;
+}
+
 /** API exposed to renderer via contextBridge (preload). */
 export interface NotchPrompterAPI {
   script: {
@@ -65,10 +80,14 @@ export interface NotchPrompterAPI {
     delete: (id: number) => Promise<boolean>;
   };
   vosk: {
-    start: () => Promise<void>;
+    start: (language: string) => Promise<void>;
     stop: () => void;
     onWord: (callback: (word: string) => void) => () => void;
     onStatus: (callback: (payload: VoskStatusPayload) => void) => () => void;
+    checkModel: (languageCode: string) => Promise<{ downloaded: boolean; size: string }>;
+    downloadModel: (languageCode: string) => Promise<void>;
+    onDownloadProgress: (callback: (payload: VoskDownloadProgressPayload) => void) => () => void;
+    onAmplitude: (callback: (payload: VoskAmplitudePayload) => void) => () => void;
   };
   window: {
     resizePrompter: (width: number, height: number) => Promise<void>;
@@ -76,4 +95,6 @@ export interface NotchPrompterAPI {
   };
   sendEditorContent: (content: string) => void;
   onEditorContentUpdate: (callback: (content: string) => void) => () => void;
+  sendPrompterSettings: (settings: ScriptSettings) => void;
+  onPrompterSettingsUpdate: (callback: (settings: ScriptSettings) => void) => () => void;
 }

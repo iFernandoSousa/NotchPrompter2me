@@ -1,5 +1,6 @@
 import { ipcMain } from 'electron';
 import { IPC_CHANNELS } from '../../shared/constants';
+import type { ScriptSettings } from '../../shared/types';
 import {
   getPrompterWindow,
   resizePrompterWindow,
@@ -11,6 +12,13 @@ export function registerWindowIpc(): void {
     const prompter = getPrompterWindow();
     if (prompter && !prompter.isDestroyed()) {
       prompter.webContents.send(IPC_CHANNELS.editorContentUpdate, content);
+    }
+  });
+
+  ipcMain.on(IPC_CHANNELS.prompterSettingsUpdate, (_event, settings: ScriptSettings) => {
+    const prompter = getPrompterWindow();
+    if (prompter && !prompter.isDestroyed()) {
+      prompter.webContents.send(IPC_CHANNELS.prompterSettingsUpdate, settings);
     }
   });
 

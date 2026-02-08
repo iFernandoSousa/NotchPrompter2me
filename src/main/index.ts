@@ -1,4 +1,5 @@
 import { app, BrowserWindow } from 'electron';
+import fs from 'fs';
 import path from 'path';
 import { registerIpcHandlers } from './ipc/handlers';
 import { createControllerWindow } from './windows/controller';
@@ -7,8 +8,23 @@ import { initDatabase } from './db/database';
 
 let controllerWindow: BrowserWindow | null = null;
 
+function setAppIconIfExists(): void {
+  if (process.platform !== 'darwin') return;
+  const cwdPath = path.join(process.cwd(), 'assets', 'icon.png');
+  const appPath = path.join(app.getAppPath(), 'assets', 'icon.png');
+  const p = fs.existsSync(cwdPath) ? cwdPath : fs.existsSync(appPath) ? appPath : null;
+  if (p) {
+    try {
+      app.dock.setIcon(p);
+    } catch {
+      // ignore
+    }
+  }
+}
+
 async function init() {
   initDatabase();
+  setAppIconIfExists();
   controllerWindow = createControllerWindow();
   createPrompterWindow();
   registerIpcHandlers();
