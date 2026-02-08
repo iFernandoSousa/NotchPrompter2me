@@ -1,52 +1,54 @@
 {
-  "name": "notchprompter",
-  "version": "0.1.0",
-  "description": "macOS teleprompter below the notch with offline speech sync",
-  "main": ".vite/build/main.js",
-  "scripts": {
-    "start": "electron-forge start",
-    "package": "electron-forge package",
-    "make": "electron-forge make"
-  },
-  "keywords": [
-    "teleprompter",
-    "electron",
-    "macos"
-  ],
-  "author": "",
-  "license": "MIT",
-  "devDependencies": {
-    "@electron-forge/cli": "^7.4.0",
-    "@electron-forge/plugin-vite": "^7.4.0",
-    "@types/node": "^22.10.0",
-    "@types/react": "^18.3.12",
-    "@types/react-dom": "^18.3.1",
-    "@vitejs/plugin-react": "^4.3.4",
-    "autoprefixer": "^10.4.20",
-    "electron": "^33.2.0",
-    "postcss": "^8.4.49",
-    "tailwindcss": "^3.4.15",
-    "typescript": "~5.6.2",
-    "vite": "^6.0.1"
-  },
-  "dependencies": {
-    "@tiptap/core": "^2.10.0",
-    "@tiptap/extension-bold": "^2.10.0",
-    "@tiptap/extension-document": "^2.10.0",
-    "@tiptap/extension-italic": "^2.10.0",
-    "@tiptap/extension-paragraph": "^2.10.0",
-    "@tiptap/extension-strike": "^2.10.0",
-    "@tiptap/extension-text": "^2.10.0",
-    "@tiptap/extension-underline": "^2.10.0",
-    "@tiptap/react": "^2.10.0",
-    "better-sqlite3": "^11.6.0",
-    "extract-zip": "^2.0.1",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "zustand": "^5.0.2"
-  },
-  "optionalDependencies": {
-    "vosk": "^0.3.39",
-    "mic": "^2.1.2"
-  }
+    "name": "notchprompter",
+    "productName": "Notch Prompter",
+    "version": "0.1.0",
+    "description": "macOS teleprompter below the notch with offline speech sync",
+    "main": ".vite/build/main.js",
+    "scripts": {
+        "start": "electron-forge start",
+        "package": "electron-forge package",
+        "make": "electron-forge make"
+    },
+    "keywords": [
+        "teleprompter",
+        "electron",
+        "macos"
+    ],
+    "author": "",
+    "license": "MIT",
+    "devDependencies": {
+        "@electron-forge/cli": "^7.4.0",
+        "@electron-forge/maker-zip": "^7.11.1",
+        "@electron-forge/plugin-vite": "^7.4.0",
+        "@types/node": "^22.10.0",
+        "@types/react": "^18.3.12",
+        "@types/react-dom": "^18.3.1",
+        "@vitejs/plugin-react": "^4.3.4",
+        "autoprefixer": "^10.4.20",
+        "electron": "^33.2.0",
+        "postcss": "^8.4.49",
+        "tailwindcss": "^3.4.15",
+        "typescript": "~5.6.2",
+        "vite": "^6.0.1"
+    },
+    "dependencies": {
+        "@tiptap/core": "^2.10.0",
+        "@tiptap/extension-bold": "^2.10.0",
+        "@tiptap/extension-document": "^2.10.0",
+        "@tiptap/extension-italic": "^2.10.0",
+        "@tiptap/extension-paragraph": "^2.10.0",
+        "@tiptap/extension-strike": "^2.10.0",
+        "@tiptap/extension-text": "^2.10.0",
+        "@tiptap/extension-underline": "^2.10.0",
+        "@tiptap/react": "^2.10.0",
+        "better-sqlite3": "^11.6.0",
+        "extract-zip": "^2.0.1",
+        "react": "^18.3.1",
+        "react-dom": "^18.3.1",
+        "zustand": "^5.0.2"
+    },
+    "optionalDependencies": {
+        "mic": "^2.1.2",
+        "vosk": "^0.3.39"
+    }
 }

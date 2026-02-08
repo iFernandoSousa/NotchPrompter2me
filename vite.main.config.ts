@@ -1,27 +1,27 @@
-import { defineConfig } from 'vite';
-import { resolve } from 'path';
+import { defineConfig } from "vite";
+import { resolve } from "path";
 
 export default defineConfig({
-  build: {
-    outDir: '.vite/build',
-    lib: {
-      entry: resolve(__dirname, 'src/main/index.ts'),
-      formats: ['cjs'],
-      fileName: () => 'main.js',
+    build: {
+        outDir: ".vite/build",
+        lib: {
+            entry: resolve(__dirname, "src/main/index.ts"),
+            formats: ["cjs"],
+            fileName: () => "main.js",
+        },
+        rollupOptions: {
+            external: ["electron", "better-sqlite3", "vosk", "mic"],
+            output: {
+                entryFileNames: "main.js",
+            },
+        },
+        target: "node18",
+        minify: false,
+        sourcemap: true,
     },
-    rollupOptions: {
-      external: ['electron', 'better-sqlite3', 'vosk', 'mic', 'extract-zip'],
-      output: {
-        entryFileNames: 'main.js',
-      },
+    resolve: {
+        alias: {
+            "@shared": resolve(__dirname, "src/shared"),
+        },
     },
-    target: 'node18',
-    minify: false,
-    sourcemap: true,
-  },
-  resolve: {
-    alias: {
-      '@shared': resolve(__dirname, 'src/shared'),
-    },
-  },
 });
