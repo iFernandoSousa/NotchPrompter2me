@@ -13,14 +13,18 @@ async function ensureMicrophoneAccess(): Promise<boolean> {
 
 export function registerVoskIpc(): void {
   ipcMain.handle(IPC_CHANNELS.voskStart, async (event, language: string) => {
-    const allowed = await ensureMicrophoneAccess();
-    if (!allowed) {
-      event.sender.send(IPC_CHANNELS.voskOnStatus, {
-        status: 'error',
-        message: 'Microphone access denied. Enable it in System Settings > Privacy & Security > Microphone.',
-      });
-      return;
+    const modelAvailable = modelManager.isModelDownloaded(language);
+    console.log(`[VoskIPC] start: lang=${language}, modelAvailable=${modelAvailable}`);
+
+    // Only require mic permission when we actually have a model to use
+    if (modelAvailable) {
+      const allowed = await ensureMicrophoneAccess();
+      if (!allowed) {
+        console.log('[VoskIPC] Microphone access denied, falling back to WPM-only mode');
+        // Still start in stub mode so WPM scrolling works
+      }
     }
+
     await voskBridge.startVosk(language);
   });
 
@@ -31,6 +35,7 @@ export function registerVoskIpc(): void {
   ipcMain.handle(IPC_CHANNELS.voskCheckModel, async (_event, languageCode: string) => {
     const option = modelManager.getLanguageOption(languageCode);
     const downloaded = modelManager.isModelDownloaded(languageCode);
+    console.log(`[VoskIPC] checkModel: lang=${languageCode}, downloaded=${downloaded}, size=${option?.size ?? '0M'}`);
     return {
       downloaded,
       size: option?.size ?? '0M',

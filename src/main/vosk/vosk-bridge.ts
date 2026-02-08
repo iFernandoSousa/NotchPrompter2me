@@ -90,11 +90,16 @@ export async function startVosk(language: string): Promise<void> {
   sendStatus('loading');
 
   if (!modelManager.isModelDownloaded(language)) {
-    sendStatus('error', 'Model not downloaded');
+    console.log('[VoskBridge] Model not downloaded for', language, '— running in WPM-only stub mode');
+    // Run in stub mode: WPM-based scrolling still works, no speech recognition
+    isListening = true;
+    sendStatus('ready');
+    sendStatus('listening');
     return;
   }
 
   const modelPath = modelManager.getModelDir(language);
+  console.log('[VoskBridge] Starting Vosk with model at', modelPath);
 
   try {
     // Optional native deps: may fail on some systems
@@ -133,8 +138,10 @@ export async function startVosk(language: string): Promise<void> {
     isListening = true;
     sendStatus('ready');
     sendStatus('listening');
-  } catch (_err) {
+    console.log('[VoskBridge] Vosk started successfully with speech recognition');
+  } catch (err) {
     // Native vosk/mic unavailable: run in stub mode (no words, no amplitude)
+    console.log('[VoskBridge] Vosk/mic unavailable, running in stub mode:', err);
     isListening = true;
     sendStatus('ready');
     sendStatus('listening');

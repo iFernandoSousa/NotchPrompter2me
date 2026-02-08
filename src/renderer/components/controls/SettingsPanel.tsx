@@ -57,6 +57,8 @@ export default function SettingsPanel() {
     setDownloadProgress(0);
     try {
       await ipc.vosk.downloadModel(settings.language);
+      // Re-verify the model status from main process after download
+      await refreshModelStatus();
     } catch (err) {
       setDownloadError(err instanceof Error ? err.message : 'Download failed');
       setDownloadProgress(null);
@@ -86,13 +88,16 @@ export default function SettingsPanel() {
             ))}
           </select>
           {!modelDownloaded && downloadProgress === null && (
-            <button
-              type="button"
-              onClick={handleDownloadModel}
-              className="px-2 py-1.5 rounded bg-blue-600 text-white text-xs font-medium hover:bg-blue-500"
-            >
-              Download model
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleDownloadModel}
+                className="px-2 py-1.5 rounded bg-blue-600 text-white text-xs font-medium hover:bg-blue-500"
+              >
+                Download model
+              </button>
+              <span className="text-xs text-zinc-500">(optional — WPM scroll works without it)</span>
+            </div>
           )}
           {downloadProgress !== null && (
             <span className="text-xs text-zinc-400">

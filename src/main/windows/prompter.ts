@@ -24,7 +24,8 @@ export function createPrompterWindow(
   }
 
   const primaryDisplay = screen.getPrimaryDisplay();
-  const { width: screenWidth } = primaryDisplay.workAreaSize;
+  // Use full display bounds (not workAreaSize) so window can overlap the menu bar / notch area
+  const { width: screenWidth } = primaryDisplay.bounds;
   const x = Math.floor((screenWidth - width) / 2);
   const y = NOTCH_SAFE_Y;
 
@@ -36,7 +37,6 @@ export function createPrompterWindow(
     frame: false,
     transparent: false,
     backgroundColor: '#000000',
-    alwaysOnTop: true,
     resizable: false,
     movable: false,
     focusable: false,
@@ -49,6 +49,9 @@ export function createPrompterWindow(
     },
     show: false,
   });
+
+  // 'screen-saver' level ensures the window renders ABOVE the macOS menu / status bar
+  prompterWindow.setAlwaysOnTop(true, 'screen-saver');
 
   if (isDev) {
     prompterWindow.loadURL(`http://localhost:5173/?window=prompter`);
@@ -71,7 +74,7 @@ export function createPrompterWindow(
 export function resizePrompterWindow(width: number, height: number): void {
   if (!prompterWindow || prompterWindow.isDestroyed()) return;
   const primaryDisplay = screen.getPrimaryDisplay();
-  const { width: screenWidth } = primaryDisplay.workAreaSize;
+  const { width: screenWidth } = primaryDisplay.bounds;
   const x = Math.floor((screenWidth - width) / 2);
   const y = NOTCH_SAFE_Y;
   prompterWindow.setBounds({ x, y, width, height });
