@@ -48,7 +48,7 @@ export default function PrompterWindow() {
                 background: "black",
                 clipPath: `path('${d}')`,
                 overflow: "hidden",
-                paddingTop: 8,
+                paddingTop: 21,
                 paddingLeft: C,
                 paddingRight: C,
             }}
