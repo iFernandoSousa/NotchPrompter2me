@@ -9,7 +9,7 @@ export default function PrompterView() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const { settings, editorContentJson, setEditorContentJson, setSettings } = useScriptStore();
-  const { playbackState, setScrollPosition } = usePrompterStore();
+  const { playbackState, setPlaybackState, setScrollPosition } = usePrompterStore();
   const ipc = useIpc();
 
   useEffect(() => {
@@ -23,6 +23,15 @@ export default function PrompterView() {
     const unsub = ipc.onPrompterSettingsUpdate((settings) => setSettings(settings));
     return unsub;
   }, [ipc, setSettings]);
+
+  /* Sync playback state from controller window */
+  useEffect(() => {
+    if (!ipc) return;
+    const unsub = ipc.onPlaybackStateUpdate((state) => {
+      setPlaybackState(state as 'stopped' | 'playing' | 'paused');
+    });
+    return unsub;
+  }, [ipc, setPlaybackState]);
 
   useElasticSync({
     scrollRef,

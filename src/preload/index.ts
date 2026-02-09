@@ -57,6 +57,17 @@ const api: NotchPrompterAPI = {
     ipcRenderer.on(IPC_CHANNELS.prompterSettingsUpdate, handler);
     return () => ipcRenderer.removeListener(IPC_CHANNELS.prompterSettingsUpdate, handler);
   },
+  sendPlaybackState: (state: string) => {
+    ipcRenderer.send(IPC_CHANNELS.playbackStateUpdate, state);
+  },
+  onPlaybackStateUpdate: (callback) => {
+    const handler = (_: unknown, state: string) => callback(state);
+    ipcRenderer.on(IPC_CHANNELS.playbackStateUpdate, handler);
+    return () => ipcRenderer.removeListener(IPC_CHANNELS.playbackStateUpdate, handler);
+  },
+  sendAudioData: (pcm16Buffer: ArrayBuffer) => {
+    ipcRenderer.send(IPC_CHANNELS.voskAudioData, Buffer.from(pcm16Buffer));
+  },
 };
 
 contextBridge.exposeInMainWorld('notchPrompter', api);

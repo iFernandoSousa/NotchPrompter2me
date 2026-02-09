@@ -73,95 +73,119 @@ export default function ScriptManager() {
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <div className="space-y-2">
+      {/* Save button */}
       <button
         type="button"
         onClick={() => setShowSave(true)}
-        className="px-4 py-2 rounded bg-zinc-600 text-white text-sm font-medium hover:bg-zinc-500"
+        className="w-full py-2.5 rounded-xl bg-blue-600 text-white text-sm font-medium hover:bg-blue-500 active:bg-blue-700 transition-colors flex items-center justify-center gap-2"
       >
-        Save script
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+          <polyline points="17 21 17 13 7 13 7 21" />
+          <polyline points="7 3 7 8 15 8" />
+        </svg>
+        Salvar Roteiro
       </button>
+
+      {/* Manage button */}
       <button
         type="button"
         onClick={openList}
-        className="px-4 py-2 rounded bg-zinc-600 text-white text-sm font-medium hover:bg-zinc-500"
+        className="w-full py-2 rounded-xl text-sm text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.04] transition-colors flex items-center justify-center gap-2"
       >
-        Load / Manage
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+          <polyline points="14 2 14 8 20 8" />
+          <line x1="16" y1="13" x2="8" y2="13" />
+          <line x1="16" y1="17" x2="8" y2="17" />
+          <polyline points="10 9 9 9 8 9" />
+        </svg>
+        Gerenciar Roteiros
       </button>
 
+      {/* ── Save modal ── */}
       {showSave && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-          <div className="bg-zinc-800 rounded-lg p-4 border border-zinc-600 min-w-[280px]">
-            <h3 className="text-sm font-medium mb-2">Save script</h3>
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-[#1c1d22] rounded-2xl p-5 border border-white/[0.06] min-w-[320px] shadow-2xl animate-fade-in">
+            <h3 className="text-sm font-semibold text-zinc-200 mb-3">Salvar roteiro</h3>
             <input
               type="text"
               value={saveTitle}
               onChange={(e) => setSaveTitle(e.target.value)}
-              placeholder="Script title"
-              className="w-full bg-zinc-700 text-zinc-100 rounded px-3 py-2 text-sm border border-zinc-600 mb-3"
+              placeholder="Título do roteiro"
+              autoFocus
+              onKeyDown={(e) => e.key === 'Enter' && handleSave()}
+              className="w-full bg-[#111215] text-zinc-200 rounded-xl px-4 py-2.5 text-sm border border-white/[0.06] focus:border-blue-500/40 focus:outline-none mb-4 placeholder-zinc-600 transition-colors"
             />
             <div className="flex justify-end gap-2">
               <button
                 type="button"
                 onClick={() => { setShowSave(false); setSaveTitle(''); }}
-                className="px-3 py-1.5 rounded bg-zinc-600 text-sm hover:bg-zinc-500"
+                className="px-4 py-2 rounded-lg bg-white/[0.04] text-sm text-zinc-400 hover:bg-white/[0.08] transition-colors"
               >
-                Cancel
+                Cancelar
               </button>
               <button
                 type="button"
                 onClick={handleSave}
                 disabled={!saveTitle.trim()}
-                className="px-3 py-1.5 rounded bg-emerald-600 text-sm hover:bg-emerald-500 disabled:opacity-50"
+                className="px-4 py-2 rounded-lg bg-blue-600 text-sm text-white font-medium hover:bg-blue-500 disabled:opacity-40 transition-colors"
               >
-                Save
+                Salvar
               </button>
             </div>
           </div>
         </div>
       )}
 
+      {/* ── Manage modal ── */}
       {showList && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-          <div className="bg-zinc-800 rounded-lg p-4 border border-zinc-600 max-w-md w-full max-h-[80vh] overflow-auto">
-            <h3 className="text-sm font-medium mb-3">Saved scripts</h3>
-            <ul className="space-y-2">
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-[#1c1d22] rounded-2xl p-5 border border-white/[0.06] max-w-md w-full max-h-[80vh] overflow-auto shadow-2xl animate-fade-in">
+            <h3 className="text-sm font-semibold text-zinc-200 mb-4">Roteiros salvos</h3>
+            <ul className="space-y-1">
               {list.map((s) => (
-                <li key={s.id} className="flex items-center justify-between gap-2 py-2 border-b border-zinc-700">
-                  <span className="text-sm truncate flex-1">{s.title}</span>
-                  <div className="flex gap-1 shrink-0">
+                <li
+                  key={s.id}
+                  className="flex items-center justify-between gap-2 py-2.5 px-3 rounded-xl hover:bg-white/[0.03] transition-colors group"
+                >
+                  <span className="text-sm text-zinc-300 truncate flex-1">{s.title}</span>
+                  <div className="flex gap-1 shrink-0 opacity-60 group-hover:opacity-100 transition-opacity">
                     <button
                       type="button"
                       onClick={() => handleLoad(s)}
-                      className="px-2 py-1 rounded bg-zinc-600 text-xs hover:bg-zinc-500"
+                      className="px-2.5 py-1 rounded-lg bg-blue-600/20 text-blue-400 text-xs font-medium hover:bg-blue-600/30 transition-colors"
                     >
-                      Open
+                      Abrir
                     </button>
                     <button
                       type="button"
                       onClick={() => handleDuplicate(s)}
-                      className="px-2 py-1 rounded bg-zinc-600 text-xs hover:bg-zinc-500"
+                      className="px-2.5 py-1 rounded-lg bg-white/[0.04] text-zinc-400 text-xs hover:bg-white/[0.08] transition-colors"
                     >
-                      Copy
+                      Copiar
                     </button>
                     <button
                       type="button"
                       onClick={() => handleDelete(s.id)}
-                      className="px-2 py-1 rounded bg-red-900/60 text-xs hover:bg-red-800/60"
+                      className="px-2.5 py-1 rounded-lg bg-red-500/10 text-red-400 text-xs hover:bg-red-500/20 transition-colors"
                     >
-                      Delete
+                      Excluir
                     </button>
                   </div>
                 </li>
               ))}
             </ul>
-            {list.length === 0 && <p className="text-zinc-500 text-sm py-4">No saved scripts.</p>}
+            {list.length === 0 && (
+              <p className="text-zinc-600 text-sm py-8 text-center">Nenhum roteiro salvo.</p>
+            )}
             <button
               type="button"
               onClick={() => setShowList(false)}
-              className="mt-3 w-full py-2 rounded bg-zinc-600 text-sm hover:bg-zinc-500"
+              className="mt-4 w-full py-2.5 rounded-xl bg-white/[0.04] text-sm text-zinc-400 hover:bg-white/[0.08] transition-colors"
             >
-              Close
+              Fechar
             </button>
           </div>
         </div>

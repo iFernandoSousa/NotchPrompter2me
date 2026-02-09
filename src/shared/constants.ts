@@ -21,6 +21,8 @@ export const IPC_CHANNELS = {
     windowShowPrompter: "window:show-prompter",
     editorContentUpdate: "editor:content-update",
     prompterSettingsUpdate: "prompter:settings-update",
+    playbackStateUpdate: "playback:state-update",
+    voskAudioData: "vosk:audio-data",
 } as const;
 
 /** Default words per minute for base scroll speed. */
@@ -39,8 +41,8 @@ export const DEFAULT_FONT_SIZE = 24;
 export const DEFAULT_FONT_COLOR = "#ffffff";
 
 /** Controller window dimensions. */
-export const CONTROLLER_WIDTH = 900;
-export const CONTROLLER_HEIGHT = 700;
+export const CONTROLLER_WIDTH = 1080;
+export const CONTROLLER_HEIGHT = 760;
 
 /** Vosk speech recognition languages (small models for desktop). */
 export interface VoskLanguageOption {

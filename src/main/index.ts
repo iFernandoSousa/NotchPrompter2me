@@ -1,4 +1,4 @@
-import { app, BrowserWindow, Menu } from "electron";
+import { app, BrowserWindow, Menu, session, systemPreferences } from "electron";
 import fs from "fs";
 import path from "path";
 import { registerIpcHandlers } from "./ipc/handlers";
@@ -34,7 +34,25 @@ function createApplicationMenu() {
         // { role: 'fileMenu' }
         {
             label: "File",
-            submenu: [isMac ? { role: "close" } : { role: "quit" }],
+            submenu: [
+                {
+                    label: "Settings…",
+                    accelerator: isMac ? "Cmd+," : "Ctrl+,",
+                    click: () => {
+                        if (
+                            controllerWindow &&
+                            !controllerWindow.isDestroyed()
+                        ) {
+                            controllerWindow.show();
+                            controllerWindow.focus();
+                        } else {
+                            controllerWindow = createControllerWindow();
+                        }
+                    },
+                },
+                { type: "separator" },
+                isMac ? { role: "close" } : { role: "quit" },
+            ],
         } as Electron.MenuItemConstructorOptions,
         // { role: 'editMenu' }
         {
@@ -113,6 +131,33 @@ async function init() {
         }
         setAppIconIfExists();
         app.setName("Notch Prompter");
+
+        // Grant microphone access to the renderer (Web Audio API)
+        if (process.platform === "darwin") {
+            const micStatus = systemPreferences.getMediaAccessStatus("microphone");
+            if (micStatus !== "granted") {
+                await systemPreferences.askForMediaAccess("microphone");
+            }
+        }
+
+        // Allow media permissions (microphone) for the renderer process
+        session.defaultSession.setPermissionRequestHandler(
+            (_webContents, permission, callback) => {
+                if (permission === "media") {
+                    callback(true);
+                } else {
+                    callback(true);
+                }
+            },
+        );
+
+        session.defaultSession.setPermissionCheckHandler(
+            (_webContents, permission) => {
+                if (permission === "media") return true;
+                return true;
+            },
+        );
+
         createApplicationMenu();
         controllerWindow = createControllerWindow();
         createPrompterWindow();

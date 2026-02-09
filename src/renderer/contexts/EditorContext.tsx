@@ -45,7 +45,7 @@ export function EditorProvider({ children }: { children: React.ReactNode }) {
     content: parseContent(editorContentJson),
     editorProps: {
       attributes: {
-        class: 'prose prose-invert max-w-none min-h-[200px] p-4 focus:outline-none',
+        class: 'min-h-full focus:outline-none text-zinc-200',
       },
     },
     onUpdate: ({ editor }) => {

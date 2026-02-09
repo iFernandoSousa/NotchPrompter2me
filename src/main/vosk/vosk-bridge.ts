@@ -1,38 +1,44 @@
 /**
- * Vosk bridge: loads model, captures mic, streams recognized words and amplitude.
- * Uses optional vosk + mic packages; falls back to stub when native bindings are unavailable.
+ * Vosk bridge: loads model, processes audio from renderer, streams recognized words and amplitude.
+ * Audio capture happens in the renderer via Web Audio API; PCM data is sent here via IPC.
  */
 
-import { BrowserWindow } from 'electron';
+import { BrowserWindow, ipcMain } from 'electron';
 import { IPC_CHANNELS } from '../../shared/constants';
 import * as modelManager from './model-manager';
+import * as voskNative from './vosk-native';
 
 let isListening = false;
 let prompterWindow: BrowserWindow | null = null;
-interface MicInstance {
-  getAudioStream: () => { on: (ev: string, fn: (data: Buffer) => void) => void };
-  start: () => void;
-  stop: () => void;
-}
-let micInstance: MicInstance | null = null;
 let recognizer: { acceptWaveform: (data: Buffer) => boolean; result: () => string; partialResult: () => string; free: () => void } | null = null;
 let model: { free: () => void } | null = null;
+let lastText = '';
 
 // Amplitude throttle: send at ~20fps
 let lastAmplitudeTime = 0;
 const AMPLITUDE_INTERVAL_MS = 50;
 
+// Audio chunk counter for logging
+let audioChunkCount = 0;
+let lastLogTime = 0;
+const LOG_INTERVAL_MS = 3000; // Log stats every 3 seconds
+
 export function setPrompterWindowForVosk(win: BrowserWindow | null): void {
   prompterWindow = win;
 }
 
+/** Send word to ALL windows (controller needs it for dictation, prompter for scroll sync). */
 function sendWord(word: string): void {
-  if (prompterWindow && !prompterWindow.isDestroyed()) {
-    prompterWindow.webContents.send(IPC_CHANNELS.voskOnWord, word);
-  }
+  console.log(`[VoskBridge] 🎤 WORD DETECTED: "${word}"`);
+  BrowserWindow.getAllWindows().forEach((win) => {
+    if (!win.isDestroyed()) {
+      win.webContents.send(IPC_CHANNELS.voskOnWord, word);
+    }
+  });
 }
 
 function sendStatus(status: 'idle' | 'loading' | 'ready' | 'listening' | 'error', message?: string): void {
+  console.log(`[VoskBridge] Status: ${status}${message ? ` — ${message}` : ''}`);
   BrowserWindow.getAllWindows().forEach((win) => {
     if (!win.isDestroyed()) {
       win.webContents.send(IPC_CHANNELS.voskOnStatus, { status, message });
@@ -68,7 +74,7 @@ function computeAmplitude(buffer: Buffer): number {
 function getTextFromResult(jsonStr: string): string {
   try {
     const obj = JSON.parse(jsonStr);
-    return (obj.text ?? '').trim();
+    return (obj.text ?? obj.partial ?? '').trim();
   } catch {
     return '';
   }
@@ -85,13 +91,62 @@ function emitWords(prevText: string, newText: string): string {
   return newText;
 }
 
+/** Process a chunk of 16-bit PCM audio from the renderer. */
+function processAudioChunk(data: Buffer): void {
+  if (!recognizer || !isListening) return;
+
+  audioChunkCount++;
+  const amp = computeAmplitude(data);
+  sendAmplitude(amp);
+
+  // Periodic logging of audio stats
+  const now = Date.now();
+  if (now - lastLogTime >= LOG_INTERVAL_MS) {
+    lastLogTime = now;
+    console.log(`[VoskBridge] Audio stats: chunks=${audioChunkCount}, bufLen=${data.length}, amplitude=${amp.toFixed(4)}, isListening=${isListening}, hasRecognizer=${!!recognizer}`);
+  }
+
+  try {
+    if (recognizer.acceptWaveform(data)) {
+      const resultStr = recognizer.result();
+      const text = getTextFromResult(resultStr);
+      console.log(`[VoskBridge] FINAL result: "${text}" (raw: ${resultStr.substring(0, 120)})`);
+      lastText = emitWords(lastText, text);
+    } else {
+      const partialStr = recognizer.partialResult();
+      const text = getTextFromResult(partialStr);
+      if (text) {
+        // Only log when partial text changes
+        if (text !== lastText) {
+          console.log(`[VoskBridge] PARTIAL result: "${text}"`);
+        }
+        lastText = emitWords(lastText, text);
+      }
+    }
+  } catch (err) {
+    console.error('[VoskBridge] Error processing audio chunk:', err);
+  }
+}
+
+/** Register the IPC listener for incoming audio data from the renderer. */
+export function registerAudioIpc(): void {
+  console.log('[VoskBridge] Registering audio IPC listener');
+  ipcMain.on(IPC_CHANNELS.voskAudioData, (_event, data: Uint8Array | Buffer) => {
+    // Electron IPC may deliver Uint8Array instead of Buffer — ensure it's a proper Buffer
+    const buf = Buffer.isBuffer(data) ? data : Buffer.from(data);
+    processAudioChunk(buf);
+  });
+}
+
 export async function startVosk(language: string): Promise<void> {
-  if (isListening) return;
+  if (isListening) {
+    console.log('[VoskBridge] Already listening, ignoring start');
+    return;
+  }
   sendStatus('loading');
 
   if (!modelManager.isModelDownloaded(language)) {
     console.log('[VoskBridge] Model not downloaded for', language, '— running in WPM-only stub mode');
-    // Run in stub mode: WPM-based scrolling still works, no speech recognition
     isListening = true;
     sendStatus('ready');
     sendStatus('listening');
@@ -102,46 +157,23 @@ export async function startVosk(language: string): Promise<void> {
   console.log('[VoskBridge] Starting Vosk with model at', modelPath);
 
   try {
-    // Optional native deps: may fail on some systems
-    const vosk = require('vosk');
-    const mic = require('mic');
     const SAMPLE_RATE = 16000;
 
-    vosk.setLogLevel(-1);
-    model = new vosk.Model(modelPath);
-    recognizer = new vosk.Recognizer({ model, sampleRate: SAMPLE_RATE });
+    voskNative.setLogLevel(0); // Enable Vosk logs for debugging
+    model = new voskNative.Model(modelPath);
+    console.log('[VoskBridge] Model loaded OK');
+    recognizer = new voskNative.Recognizer({ model, sampleRate: SAMPLE_RATE });
+    console.log('[VoskBridge] Recognizer created OK');
+    lastText = '';
+    audioChunkCount = 0;
+    lastLogTime = Date.now();
 
-    micInstance = mic({
-      rate: String(SAMPLE_RATE),
-      channels: '1',
-      debug: false,
-      device: 'default',
-    });
-
-    let lastText = '';
-    const micInputStream = micInstance!.getAudioStream();
-    micInputStream.on('data', (data: Buffer) => {
-      if (!recognizer) return;
-      sendAmplitude(computeAmplitude(data));
-      if (recognizer.acceptWaveform(data)) {
-        const resultStr = recognizer.result();
-        const text = getTextFromResult(resultStr);
-        lastText = emitWords(lastText, text);
-      } else {
-        const partialStr = recognizer.partialResult();
-        const text = getTextFromResult(partialStr);
-        if (text) lastText = emitWords(lastText, text);
-      }
-    });
-
-    micInstance!.start();
     isListening = true;
     sendStatus('ready');
     sendStatus('listening');
-    console.log('[VoskBridge] Vosk started successfully with speech recognition');
+    console.log('[VoskBridge] Vosk started — waiting for audio from renderer');
   } catch (err) {
-    // Native vosk/mic unavailable: run in stub mode (no words, no amplitude)
-    console.log('[VoskBridge] Vosk/mic unavailable, running in stub mode:', err);
+    console.error('[VoskBridge] Vosk startup FAILED:', err);
     isListening = true;
     sendStatus('ready');
     sendStatus('listening');
@@ -149,14 +181,6 @@ export async function startVosk(language: string): Promise<void> {
 }
 
 function cleanup(): void {
-  try {
-    if (micInstance) {
-      micInstance.stop();
-      micInstance = null;
-    }
-  } catch {
-    micInstance = null;
-  }
   try {
     if (recognizer) {
       recognizer.free();
@@ -177,7 +201,9 @@ function cleanup(): void {
 
 export function stopVosk(): void {
   if (!isListening) return;
+  console.log(`[VoskBridge] Stopping Vosk (processed ${audioChunkCount} chunks)`);
   isListening = false;
+  lastText = '';
   cleanup();
   sendStatus('idle');
 }

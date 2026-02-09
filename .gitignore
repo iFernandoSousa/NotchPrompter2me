@@ -5,3 +5,6 @@ dist/
 *.log
 .DS_Store
 *.local
+
+# Native libraries (downloaded from vosk npm tarball, ~12MB)
+native/vosk/

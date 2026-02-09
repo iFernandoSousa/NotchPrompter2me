@@ -10,10 +10,13 @@ const statusLabels: Record<VoskStatus, string> = {
   error: 'Error',
 };
 
-const BASE_SIZE_PX = 16;
-const MAX_SIZE_PX = 48;
-const MIN_SCALE = 1;
-const MAX_SCALE = MAX_SIZE_PX / BASE_SIZE_PX;
+const statusColors: Record<VoskStatus, string> = {
+  idle: 'bg-zinc-600',
+  loading: 'bg-amber-500',
+  ready: 'bg-emerald-500',
+  listening: 'bg-blue-500',
+  error: 'bg-red-500',
+};
 
 export default function SpeechStatus() {
   const [status, setStatus] = useState<VoskStatus>('idle');
@@ -42,31 +45,45 @@ export default function SpeechStatus() {
   }, [ipc]);
 
   const isListening = status === 'listening';
-  const scale = isListening
-    ? MIN_SCALE + amplitude * (MAX_SCALE - MIN_SCALE)
-    : MIN_SCALE;
-  const glowSize = isListening ? 4 + amplitude * 12 : 0;
+  const isActive = status !== 'idle';
+  const dotScale = isListening ? 1 + amplitude * 0.6 : 1;
 
   return (
-    <div className="flex items-center gap-2 text-sm text-zinc-400">
-      <span
-        className="rounded-full bg-blue-500 flex-shrink-0 transition-all duration-150 ease-out"
-        style={{
-          width: BASE_SIZE_PX,
-          height: BASE_SIZE_PX,
-          transform: `scale(${scale})`,
-          boxShadow: glowSize > 0 ? `0 0 ${glowSize}px rgba(59, 130, 246, 0.5)` : undefined,
-        }}
-        title={message}
-      />
-      <span className="flex flex-col">
-        {statusLabels[status]}
-        {status === 'error' && message && (
-          <span className="text-xs text-red-400 max-w-[200px] truncate" title={message}>
-            {message}
-          </span>
+    <div className="flex items-center gap-2.5 text-xs select-none">
+      {/* Status indicator dot */}
+      <div className="relative flex items-center justify-center w-5 h-5">
+        {/* Pulse ring when listening */}
+        {isListening && (
+          <span className="absolute inset-0 rounded-full bg-blue-500/30 animate-pulse-ring" />
         )}
+
+        {/* Main dot */}
+        <span
+          className={`
+            relative z-10 rounded-full transition-all duration-200 ease-out
+            ${statusColors[status]}
+            ${isListening ? 'w-3 h-3' : 'w-2 h-2'}
+          `}
+          style={{
+            transform: `scale(${dotScale})`,
+            boxShadow: isListening
+              ? `0 0 ${6 + amplitude * 10}px rgba(59, 130, 246, 0.5)`
+              : undefined,
+          }}
+        />
+      </div>
+
+      {/* Status text */}
+      <span className={`text-xs font-medium ${isActive ? 'text-zinc-300' : 'text-zinc-500'}`}>
+        {statusLabels[status]}
       </span>
+
+      {/* Error message */}
+      {status === 'error' && message && (
+        <span className="text-[10px] text-red-400 max-w-[150px] truncate" title={message}>
+          {message}
+        </span>
+      )}
     </div>
   );
 }

@@ -15,11 +15,18 @@ function getIconPath(): string | undefined {
 
 export function createControllerWindow(): BrowserWindow {
     const iconPath = getIconPath();
+    const isMac = process.platform === "darwin";
     const win = new BrowserWindow({
         title: "NotchPrompter",
         width: CONTROLLER_WIDTH,
         height: CONTROLLER_HEIGHT,
+        minWidth: 860,
+        minHeight: 500,
         ...(iconPath && { icon: iconPath }),
+        ...(isMac && {
+            titleBarStyle: "hiddenInset" as const,
+            trafficLightPosition: { x: 14, y: 14 },
+        }),
         webPreferences: {
             preload: path.join(__dirname, "preload.js"),
             contextIsolation: true,

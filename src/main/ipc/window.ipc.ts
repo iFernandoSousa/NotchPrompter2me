@@ -22,6 +22,13 @@ export function registerWindowIpc(): void {
     }
   });
 
+  ipcMain.on(IPC_CHANNELS.playbackStateUpdate, (_event, state: string) => {
+    const prompter = getPrompterWindow();
+    if (prompter && !prompter.isDestroyed()) {
+      prompter.webContents.send(IPC_CHANNELS.playbackStateUpdate, state);
+    }
+  });
+
   ipcMain.handle(
     IPC_CHANNELS.windowResizePrompter,
     (_event, width: number, height: number) => {

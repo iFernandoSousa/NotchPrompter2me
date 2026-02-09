@@ -2,17 +2,196 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Base ── */
 html, body {
   margin: 0;
   padding: 0;
   width: 100%;
   height: 100%;
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: 'SF Pro Display', -apple-system, system-ui, sans-serif;
   background: transparent !important;
   background-color: transparent !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 #root {
   width: 100%;
   height: 100%;
+}
+
+/* ── Custom scrollbar ── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+/* ── ProseMirror / Editor ── */
+.ProseMirror {
+  outline: none;
+  caret-color: #3b82f6;
+}
+
+.ProseMirror p {
+  margin: 0;
+  line-height: 1.8;
+}
+
+.ProseMirror strong { font-weight: 700; }
+.ProseMirror em { font-style: italic; }
+.ProseMirror u { text-decoration: underline; }
+.ProseMirror s { text-decoration: line-through; color: rgba(255,255,255,0.5); }
+
+/* ── Editor line numbers ── */
+.editor-with-lines .ProseMirror {
+  counter-reset: editor-line;
+  padding-left: 3.5rem !important;
+  padding-top: 1rem !important;
+  padding-right: 1.5rem !important;
+  padding-bottom: 40vh !important;
+  min-height: 100%;
+  font-size: 15px;
+}
+
+.editor-with-lines .ProseMirror > * {
+  counter-increment: editor-line;
+  position: relative;
+}
+
+.editor-with-lines .ProseMirror > *::before {
+  content: counter(editor-line);
+  position: absolute;
+  left: -3rem;
+  width: 2rem;
+  text-align: right;
+  color: rgba(255, 255, 255, 0.18);
+  font-family: 'SF Mono', ui-monospace, monospace;
+  font-size: 0.75rem;
+  line-height: inherit;
+  user-select: none;
+  pointer-events: none;
+  top: 0;
+}
+
+/* ── Range slider ── */
+input[type='range'] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #3b82f6;
+  cursor: pointer;
+  border: 2px solid #16171b;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+  transition: all 0.15s ease;
+}
+
+input[type='range']::-webkit-slider-thumb:hover {
+  background: #60a5fa;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+  transform: scale(1.15);
+}
+
+input[type='range']::-webkit-slider-thumb:active {
+  background: #2563eb;
+  transform: scale(1.05);
+}
+
+/* Range slider filled track */
+input[type='range']::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 2px;
+}
+
+/* ── Color picker ── */
+input[type='color'] {
+  -webkit-appearance: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+input[type='color']::-webkit-color-swatch-wrapper {
+  padding: 2px;
+}
+
+input[type='color']::-webkit-color-swatch {
+  border: none;
+  border-radius: 6px;
+}
+
+/* ── Select styling ── */
+select {
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%236b7280' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.6rem center;
+  padding-right: 2rem;
+}
+
+/* ── Pulse animation for speech ── */
+@keyframes speech-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.5);
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgba(59, 130, 246, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+  }
+}
+
+.speech-listening {
+  animation: speech-pulse 1.5s ease-out infinite;
+}
+
+/* ── Glassmorphism utility ── */
+.glass {
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* ── Smooth transitions for interactive elements ── */
+.interactive {
+  transition: all 0.15s ease;
+}
+
+.interactive:hover {
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+/* ── macOS window drag region ── */
+.drag-region {
+  -webkit-app-region: drag;
+}
+
+.no-drag {
+  -webkit-app-region: no-drag;
 }

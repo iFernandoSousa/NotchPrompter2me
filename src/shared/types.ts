@@ -97,4 +97,7 @@ export interface NotchPrompterAPI {
   onEditorContentUpdate: (callback: (content: string) => void) => () => void;
   sendPrompterSettings: (settings: ScriptSettings) => void;
   onPrompterSettingsUpdate: (callback: (settings: ScriptSettings) => void) => () => void;
+  sendPlaybackState: (state: string) => void;
+  onPlaybackStateUpdate: (callback: (state: string) => void) => () => void;
+  sendAudioData: (pcm16Buffer: ArrayBuffer) => void;
 }

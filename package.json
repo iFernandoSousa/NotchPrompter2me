@@ -7,7 +7,8 @@
     "scripts": {
         "start": "electron-forge start",
         "package": "electron-forge package",
-        "make": "electron-forge make"
+        "make": "electron-forge make",
+        "postinstall": "node scripts/setup-vosk-native.js"
     },
     "keywords": [
         "teleprompter",
@@ -43,12 +44,10 @@
         "@tiptap/react": "^2.10.0",
         "better-sqlite3": "^11.6.0",
         "extract-zip": "^2.0.1",
+        "koffi": "^2.15.1",
+        "mic": "^2.1.2",
         "react": "^18.3.1",
         "react-dom": "^18.3.1",
         "zustand": "^5.0.2"
-    },
-    "optionalDependencies": {
-        "mic": "^2.1.2",
-        "vosk": "^0.3.39"
     }
 }
